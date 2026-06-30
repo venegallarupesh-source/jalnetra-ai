@@ -59,10 +59,11 @@ serve(async (req: Request) => {
 
     const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    const twilioNumber = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
+    const twilioWhatsappNumber = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
+const twilioSmsNumber = Deno.env.get("TWILIO_SMS_NUMBER");
 
     // If Twilio is not configured, return simulated success (demo mode)
-    if (!twilioSid || !twilioToken || !twilioNumber) {
+    if (!twilioSid || !twilioToken || !twilioWhatsappNumber || !twilioSmsNumber) {
       return new Response(
         JSON.stringify({
           success: true,
@@ -78,7 +79,7 @@ serve(async (req: Request) => {
     // Normalize the recipient number to whatsapp:+91XXXXXXXXXX
     const normalized = normalizeNumber(body.number);
     const toNumber = channel === "whatsapp" ? `whatsapp:${normalized}` : normalized;
-    const fromNumber = channel === "whatsapp" ? `whatsapp:${twilioNumber}` : twilioNumber;
+    const fromNumber = channel === "whatsapp" ? `whatsapp:${twilioWhatsappNumber}` : twilioSmsNumber;
 
     // Send via Twilio REST API
     const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`;
