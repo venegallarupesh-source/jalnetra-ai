@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#0d1f3c"/>
+      <stop offset="100%" stop-color="#060d1f"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00BFFF"/>
+      <stop offset="100%" stop-color="#FF6B00"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g fill="#00BFFF" opacity="0.6">
+    <circle cx="100" cy="80" r="1.5"/><circle cx="250" cy="120" r="1"/><circle cx="400" cy="60" r="1.5"/>
+    <circle cx="600" cy="100" r="1"/><circle cx="800" cy="70" r="1.5"/><circle cx="1000" cy="110" r="1"/>
+    <circle cx="1100" cy="50" r="1.5"/><circle cx="150" cy="500" r="1"/><circle cx="350" cy="540" r="1.5"/>
+    <circle cx="550" cy="520" r="1"/><circle cx="750" cy="560" r="1.5"/><circle cx="950" cy="530" r="1"/>
+  </g>
+  <circle cx="600" cy="280" r="60" fill="none" stroke="#00BFFF" stroke-width="3" opacity="0.4"/>
+  <circle cx="600" cy="280" r="20" fill="#FF6B00"/>
+  <text x="600" y="400" font-family="Space Mono, monospace" font-size="72" font-weight="700" fill="url(#title)" text-anchor="middle">JALNETRA AI</text>
+  <text x="600" y="460" font-family="Space Grotesk, sans-serif" font-size="28" fill="#00BFFF" text-anchor="middle" opacity="0.9">The Eye That Sees Water Stress From Space</text>
+  <text x="600" y="540" font-family="Space Grotesk, sans-serif" font-size="20" fill="#ffffff" text-anchor="middle" opacity="0.5">ISRO Bharatiya Antariksh Hackathon 2026 · Challenge 6</text>
+</svg>
