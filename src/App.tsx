@@ -73,15 +73,7 @@ function AppContent() {
     return () => window.removeEventListener('scroll', handler);
   }, [page]);
 
-  if (page === 'signin' || page === 'signup') {
-    return (
-      <>
-        <Navbar onNavigate={handleNavigate} currentPage={page} />
-        <AuthPage mode={page} onNavigate={handleNavigate} />
-        <Chatbot />
-      </>
-    );
-  }
+  
 
   if (page === 'profile') {
     return (
