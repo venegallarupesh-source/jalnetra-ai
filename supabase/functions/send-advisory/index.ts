@@ -23,7 +23,7 @@ interface AdvisoryRequest {
 }
 
 function buildAlertMessage(name: string, village: string, crop: string): string {
-  return `🌾 JALNETRA AI Alert\n\nFarmer: ${name}\nVillage: ${village}\nCrop: ${crop}\n\n✅ Your crop moisture advisory is ready. Soil moisture and NDVI analysis show your field needs attention. Reply YES to receive irrigation schedule.`;
+  return `JALNETRA AI: Hi ${name}, your ${crop} field in ${village} needs irrigation. Reply YES for schedule.`;
 }
 
 function normalizeNumber(raw: string): string {
