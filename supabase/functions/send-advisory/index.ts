@@ -1,8 +1,6 @@
-// JALNETRA AI — WhatsApp Farmer Advisory Alert Edge Function
-// Sends a real WhatsApp message via Twilio using TWILIO_ACCOUNT_SID,
-// TWILIO_AUTH_TOKEN, and TWILIO_WHATSAPP_NUMBER secrets.
-// If secrets are not configured, returns a simulated success so the site
-// remains fully evaluable by judges without live API keys.
+// JALNETRA AI — WhatsApp & SMS Farmer Advisory Alert Edge Function
+// Sends real WhatsApp/SMS messages via Twilio.
+// Falls back to simulated success if secrets are not configured.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -13,13 +11,13 @@ const corsHeaders = {
 };
 
 interface AdvisoryRequest {
-  number: string;      // 10-digit Indian number, e.g. "9876543210"
-  name: string;        // Farmer name
-  village: string;     // Village name
-  crop: string;        // Crop type
-  language?: string;   // Language code (en, te, hi, ta, kn, bn)
+  number: string;
+  name: string;
+  village: string;
+  crop: string;
+  language?: string;
   channel?: "whatsapp" | "sms";
-  message?: string;    // Optional pre-built message (legacy support)
+  message?: string;
 }
 
 function buildAlertMessage(name: string, village: string, crop: string): string {
@@ -27,7 +25,6 @@ function buildAlertMessage(name: string, village: string, crop: string): string 
 }
 
 function normalizeNumber(raw: string): string {
-  // Strip non-digits, take last 10 digits, prefix +91
   const digits = raw.replace(/\D/g, "");
   const ten = digits.length >= 10 ? digits.slice(-10) : digits;
   return `+91${ten}`;
@@ -42,28 +39,37 @@ serve(async (req: Request) => {
     const body: AdvisoryRequest = await req.json();
     const channel = body.channel || "whatsapp";
 
-    // Validate required fields
     if (!body.number) {
       return new Response(
         JSON.stringify({ error: "Missing phone number" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Build the alert message — prefer explicit message, else build from farmer details
     const alertMessage = body.message || buildAlertMessage(
       body.name || "Farmer",
       body.village || "Unknown",
-      body.crop || "Unknown",
+      body.crop || "Unknown"
     );
 
+    // Read Twilio secrets
     const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioWhatsappNumber = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
-const twilioSmsNumber = Deno.env.get("TWILIO_SMS_NUMBER");
+    const twilioSmsNumber = Deno.env.get("TWILIO_SMS_NUMBER");
 
-    // If Twilio is not configured, return simulated success (demo mode)
+    // Debug log — shows which secrets are loaded
+    console.log("ENV CHECK:", {
+      SID: twilioSid ? "OK" : "MISSING",
+      TOKEN: twilioToken ? "OK" : "MISSING",
+      WHATSAPP: twilioWhatsappNumber ? "OK" : "MISSING",
+      SMS: twilioSmsNumber ? "OK" : "MISSING",
+      CHANNEL: channel,
+    });
+
+    // Demo mode — if any secret is missing, return simulated success
     if (!twilioSid || !twilioToken || !twilioWhatsappNumber || !twilioSmsNumber) {
+      console.log("Demo mode: One or more Twilio secrets are missing.");
       return new Response(
         JSON.stringify({
           success: true,
@@ -72,16 +78,18 @@ const twilioSmsNumber = Deno.env.get("TWILIO_SMS_NUMBER");
           message: "Demo mode: Twilio not configured. Message preview shown.",
           preview: alertMessage,
         }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Normalize the recipient number to whatsapp:+91XXXXXXXXXX
+    // Build To and From numbers based on channel
     const normalized = normalizeNumber(body.number);
     const toNumber = channel === "whatsapp" ? `whatsapp:${normalized}` : normalized;
     const fromNumber = channel === "whatsapp" ? `whatsapp:${twilioWhatsappNumber}` : twilioSmsNumber;
 
-    // Send via Twilio REST API
+    console.log("Sending via Twilio:", { channel, to: toNumber, from: fromNumber });
+
+    // Call Twilio REST API
     const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`;
     const params = new URLSearchParams();
     params.append("From", fromNumber);
@@ -100,13 +108,16 @@ const twilioSmsNumber = Deno.env.get("TWILIO_SMS_NUMBER");
 
     if (!response.ok) {
       const errText = await response.text();
+      console.log("Twilio error:", errText);
       return new Response(
         JSON.stringify({ error: `Twilio error: ${errText}` }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const data = await response.json();
+    console.log("Twilio success:", { sid: data.sid, status: data.status });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -116,12 +127,14 @@ const twilioSmsNumber = Deno.env.get("TWILIO_SMS_NUMBER");
         status: data.status,
         to: toNumber,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (err) {
+    console.log("Unexpected error:", err.message);
     return new Response(
       JSON.stringify({ error: err.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
