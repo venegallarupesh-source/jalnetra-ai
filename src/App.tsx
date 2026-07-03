@@ -72,7 +72,18 @@ function AppContent() {
     window.addEventListener('scroll', handler);
     return () => window.removeEventListener('scroll', handler);
   }, [page]);
-
+if (page === 'signin' || page === 'signup') {
+  return (
+    <>
+      <Navbar onNavigate={handleNavigate} currentPage={page} />
+      <AuthPage 
+        mode={page} 
+        onNavigate={handleNavigate} 
+      />
+      <Footer onNavigate={handleNavigate} />
+    </>
+  );
+}
   
 
   if (page === 'profile') {
